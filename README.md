@@ -1,2 +1,2 @@
 # unity-stretchy
-A simple set of behaviors to dynamically stretch an object between any two points or targets.
+A simple set of behaviors for Unity 3D which dynamically stretch an object between two points or targets.
