@@ -1,0 +1,31 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.meta",
+				"*.mat",
+				"*.png",
+				"*.fbx",
+				"*.prefab",
+				"*.ttf",
+				"*.ttc",
+				"*.unity",
+				"*.mp3",
+				"*.wav"
+			],
+			"folder_exclude_patterns":
+			[
+				"Materials",
+				"Models",
+				"Prefabs",
+				"Fonts",
+				"Sounds",
+				"Textures",
+				"Music"
+			],
+			"path": "Assets"
+		}
+	]
+}
