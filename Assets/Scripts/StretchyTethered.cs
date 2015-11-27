@@ -1,9 +1,9 @@
 ﻿/**
  * StretchyTethered.cs
  *
- * Stretch an object (on its Z axis) between two Transforms.
+ * Stretch an object (on its Z axis) between two GameObjects.
  *
- * If the Transform target for an end is unset, the end remains tethered
+ * If the GameObject target for an end is unset, the end remains tethered
  * to the last global point that was set.
  *
  */
@@ -13,8 +13,14 @@ using System.Collections;
 //[NoExecuteInEditMode]
 public class StretchyTethered : Stretchy {
 
+  // Pre-set Targets can be any kind of GameObject
+  // If the target object has a StretchyTarget already, that's ok
+  // but it's not required. At Start, as many targets as needed
+  // will be located or created.
+  public GameObject[] targetObj = new GameObject[2];
+
   // Let Targets have properties instead of using multiple arrays
-  public StretchyTarget[] target = new StretchyTarget[2];
+  protected StretchyTarget[] target = new StretchyTarget[2];
 
   /**
    * When starting out, offsets will be assigned based on the
@@ -25,11 +31,29 @@ public class StretchyTethered : Stretchy {
   protected override void Start() {
     base.Start();
 
+    // Ensure a target component for each end
+    InitTargetsForTetheredEnds();
+
     // Get the current offsets and preserve them
     RefreshTargetOffsets();
 
     // Get the default end distance margins from the targets
     ResetTargetMargins();
+  }
+
+  /**
+   * For each end's gameObject, get the next "free" StretchyTarget.
+   * Add one if needed. This allows more than one connection to
+   * a single GameObject.
+   */
+  void InitTargetsForTetheredEnds() {
+    for (int i=0; i<2; i++) {
+      GameObject o = targetObj[i];
+      if (o != null) {
+        if (target[i] == null) target[i] = GetFreeTargetForObject(o);
+        if (target[i] != null) target[i].isFree = false;
+      }
+    }
   }
 
   /**
@@ -223,6 +247,22 @@ public class StretchyTethered : Stretchy {
   }
 
   /**
+   * Get the next free target on an object, or make one
+   */
+  StretchyTarget GetFreeTargetForObject(GameObject obj) {
+    StretchyTarget outTarget = null;
+    foreach (StretchyTarget t in obj.GetComponents<StretchyTarget>()) {
+      if (t.isFree) {
+        outTarget = t;
+        break;
+      }
+    }
+    if (outTarget == null)
+      outTarget = obj.AddComponent<StretchyTarget>();
+    return outTarget;
+  }
+
+  /**
    * Tether one of the ends to a StretchyTarget (null is ok) with a local or world offset
    * The other offset is set to zero, but technically both can be used together
    */
@@ -239,7 +279,7 @@ public class StretchyTethered : Stretchy {
   }
 
   /**
-   * Untether one of the ends, leaving it tethered to its current position
+   * Untether one end or both ends, leaving the ends tethered at their current positions
    */
   public void Untether(int end=-1) {
     if (end == -1) {

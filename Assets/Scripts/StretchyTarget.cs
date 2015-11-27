@@ -14,6 +14,14 @@ public class StretchyTarget : MonoBehaviour {
 
   protected Transform T;
 
+  // Flag whether this target is used
+  private bool _isFree = true;
+
+  public bool isFree {
+    get { return _isFree; }
+    set { _isFree = value; }
+  }
+
   public float defaultMargin = 0;
 
   // Flags to make processing simpler, either world or local
