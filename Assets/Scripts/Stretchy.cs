@@ -19,7 +19,11 @@ public class Stretchy : MonoBehaviour {
   // the ratio between local and world scaling
   protected float scaleFactor = 1f;
 
+  // The direction in which to stretch
   protected Vector3 stretchAxis = Vector3.forward;
+
+  // The object size is assumed to be 1 x 1 x 1
+  protected Vector3 localSize = Vector3.one;
 
   // Each end of this object will be tethered to a world point
   // the ratio between local and world scaling
@@ -37,7 +41,7 @@ public class Stretchy : MonoBehaviour {
   protected Vector3[] endPoints {
     get {
       Vector3 pos = T.position,
-              ray = T.rotation * (stretchAxis * T.lossyScale.z / 2);   // Half the stretch (T.forward also works here)
+              ray = T.rotation * (stretchAxis * (T.lossyScale.z / 2) * localSize.z);   // Half the stretch (T.forward also works here)
       return new Vector3[2] { pos - ray, pos + ray };
     }
   }
@@ -50,6 +54,14 @@ public class Stretchy : MonoBehaviour {
   protected virtual void Start() {
     // The proportion between world and local scale
     scaleFactor = (T.lossyScale.x != 0 && T.localScale.x != 0) ? T.lossyScale.x / T.localScale.x : 1;
+
+    // If there's a mesh, get its bounding box for scaling purposes
+    // otherwise assume 1 x 1 x 1
+    MeshFilter meshFilter = GetComponent<MeshFilter>();
+    if (meshFilter != null && meshFilter.mesh != null)
+      localSize = meshFilter.mesh.bounds.extents * 2f;
+    else
+      localSize = Vector3.one;
 
     // Get the world positions of the ends and store as the current targetPoint
     InitTargetPoints();
@@ -89,7 +101,7 @@ public class Stretchy : MonoBehaviour {
     Vector3 targetDiff = targetLocalPos[1] - targetLocalPos[0];
 
     // Un-comment this to allow dynamic re-parenting
-    // scaleFactor = T.lossyScale.z / T.localScale.z;
+    // scaleFactor = (T.lossyScale.x != 0 && T.localScale.x != 0) ? T.lossyScale.x / T.localScale.x : 1;
 
     float localDistance = targetDiff.magnitude,
           localMargin0 = targetMargin[0] / scaleFactor,
@@ -98,7 +110,7 @@ public class Stretchy : MonoBehaviour {
 
     // Only apply the stretch to Z scaling. XY scaling will be unaffected.
     Vector3 localScale = T.localScale;
-    localScale.z = (lengthScale > 0) ? lengthScale : 0;
+    localScale.z = (lengthScale > 0) ? lengthScale / localSize.z : 0;
     T.localScale = localScale;
 
     // Position the line exactly half way between the targets
